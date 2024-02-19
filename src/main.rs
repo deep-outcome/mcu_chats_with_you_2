@@ -37,7 +37,7 @@ fn entry() -> ! {
 
     interrupt_free(move |cs| {
         DISPLAYOR.borrow(cs).replace(Some(display));
-        ANIMATOR.borrow(cs).set(rtc0);
+        _ = ANIMATOR.borrow(cs).set(rtc0);
         RND.borrow(cs).set(Some(rnd));
     });
 
@@ -82,6 +82,10 @@ unsafe fn RTC0() {
     ];
 
     static mut SCALER: AtomicU8 = AtomicU8::new(0);
+    static mut INS_SP: AtomicU8 = AtomicU8::new(0);
+
+    const TEXT: &str = "software9119.technology";
+    const TEXT_PTR: *const u8 = TEXT.as_ptr();
 
     if SCALER.fetch_add(1, Ordering::Relaxed) < 18 {
         return;
@@ -89,19 +93,14 @@ unsafe fn RTC0() {
         SCALER.swap(0, Ordering::Relaxed);
     }
 
-    const TEXT: &str = "software9119.technology";
-    const TEXT_PTR: *const u8 = TEXT.as_ptr();
-
-    static mut INS_SP: AtomicU8 = AtomicU8::new(0);
-
-    let ins_sp = INS_SP.load(Ordering::Relaxed);
-
     for cix in 1..5 {
         let prev_cix = cix - 1;
         for rix in 0..5 {
             DISP_LATT[rix][prev_cix] = DISP_LATT[rix][cix];
         }
     }
+
+    let ins_sp = INS_SP.load(Ordering::Relaxed);
 
     let def = if ins_sp > 0 {
         &ug_max::SPACING
@@ -118,14 +117,18 @@ unsafe fn RTC0() {
 
     for rix in 0..5 {
         let mask = 1 << rix;
-        let rnd = rnd.random_u8() % 10;
 
-        let rnd = match rnd {
-            0..=5 => 5,
-            x => x,
+        let brightness = if col & mask == mask {
+            let rnd = rnd.random_u8() % 10;
+
+            match rnd {
+                0..=5 => 5,
+                x => x,
+            }
+        } else {
+            0
         };
 
-        let brightness = if col & mask == mask { 1 * rnd } else { 0 };
         DISP_LATT[rix][4] = brightness;
     }
 
