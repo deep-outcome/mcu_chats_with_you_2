@@ -2,7 +2,7 @@
 Advanced micro:bit v2 display messaging.
 
 #### Show
-![software9119.technology](https://github.com/bravequickcleverfibreyarn/mcu_chats_with_you_2/blob/main/pre/software9119.technology.gif)
+![software9119.technology](https://github.com/deep-outcome/mcu_chats_with_you_2/blob/main/pre/software9119.technology.gif)
 
 #### Guide
 
